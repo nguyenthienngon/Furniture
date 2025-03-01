@@ -158,65 +158,7 @@
     <script src="/vendor/laravel-filemanager/js/stand-alone-button.js"></script>
     <script src="{{ asset('backend/summernote/summernote.min.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
-    {{-- <script>
-        $(document).ready(function() {
-            $('form').on('submit', function(e) {
-                let isValid = true;
-                let errorMessage = '';
 
-                // Xóa thông báo lỗi cũ
-                $('.text-danger').text('');
-
-                // Kiểm tra tiêu đề
-                let title = $('#inputTitle').val().trim();
-                if (title === '') {
-                    $('#inputTitle').next('.text-danger').text('Vui lòng nhập tiêu đề.');
-                    isValid = false;
-                }
-
-                // Kiểm tra tóm tắt
-                let summary = $('#summary').val().trim();
-                if (summary === '') {
-                    $('#summary').next('.text-danger').text('Vui lòng nhập tóm tắt.');
-                    isValid = false;
-                }
-
-                // Kiểm tra danh mục sản phẩm
-                let category = $('#cat_id').val();
-                if (!category) {
-                    $('#cat_id').next('.text-danger').text('Vui lòng chọn danh mục sản phẩm.');
-                    isValid = false;
-                }
-
-                // Kiểm tra giá sản phẩm
-                let price = $('#price').val().trim();
-                if (price === '' || parseFloat(price) <= 0) {
-                    $('#price').next('.text-danger').text('Vui lòng nhập giá hợp lệ.');
-                    isValid = false;
-                }
-
-                // Kiểm tra số lượng sản phẩm
-                let stock = $('#quantity').val().trim();
-                if (stock === '' || parseInt(stock) < 0) {
-                    $('#quantity').next('.text-danger').text('Vui lòng nhập số lượng hợp lệ.');
-                    isValid = false;
-                }
-
-                // Kiểm tra trạng thái
-                let status = $('select[name="status"]').val();
-                if (!status) {
-                    $('select[name="status"]').next('.text-danger').text('Vui lòng chọn trạng thái.');
-                    isValid = false;
-                }
-
-                // Nếu có lỗi, ngăn form gửi đi
-                if (!isValid) {
-                    e.preventDefault();
-                    alert('Vui lòng kiểm tra lại các trường bắt buộc.');
-                }
-            });
-        });
-    </script> --}}
 
     <script>
         $('#lfm').filemanager('image');

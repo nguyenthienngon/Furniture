@@ -13,6 +13,11 @@ class Product extends Model
     {
         return $this->hasOne('App\Models\Category', 'id', 'cat_id');
     }
+    public function cat_title()
+    {
+        return $this->belongsTo(Category::class, 'cat_id');
+    }
+
     public function sub_cat_info()
     {
         return $this->hasOne('App\Models\Category', 'id', 'child_cat_id');

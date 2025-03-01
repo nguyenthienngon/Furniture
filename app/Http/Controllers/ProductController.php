@@ -134,11 +134,12 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
+
         $this->validate($request, [
             'title' => 'string|required',
             'summary' => 'string|required',
             'description' => 'string|nullable',
-            'photo' => 'string|required',
+
             'size' => 'nullable',
             'stock' => "required|numeric",
             'cat_id' => 'required|exists:categories,id',
@@ -153,21 +154,26 @@ class ProductController extends Controller
 
         $data = $request->all();
         $data['is_featured'] = $request->input('is_featured', 0);
-        $size = $request->input('size');
-        if ($size) {
-            $data['size'] = implode(',', $size);
-        } else {
-            $data['size'] = '';
+
+        // Handle image photos as an array
+        if ($request->has('photos')) {
+            $data['photo'] = implode(',', $request->photos);  // Convert array to comma-separated string
         }
-        // return $data;
+
+
+
+        // Update product data
         $status = $product->fill($data)->save();
         if ($status) {
             request()->session()->flash('success', 'Cập nhật sản phẩm thành công');
         } else {
             request()->session()->flash('error', 'Vui lòng thử lại!!');
         }
+
         return redirect()->route('product.index');
     }
+
+
 
     /**
      * Remove the specified resource from storage.

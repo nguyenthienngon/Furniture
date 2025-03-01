@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -22,6 +24,7 @@ Route::get('user/logout', 'FrontendController@logout')->name('user.logout');
 Route::get('user/register', 'FrontendController@register')->name('register.form');
 Route::post('user/register', 'FrontendController@registerSubmit')->name('register.submit');
 // Reset password
+Auth::routes(['verify' => true]);
 
 
 // Routes trong file web.php
@@ -35,7 +38,7 @@ Route::post('password/reset', 'FrontendController@reset')->name('password.update
 Route::get('login/{provider}/', 'Auth\LoginController@redirect')->name('login.redirect');
 Route::get('login/{provider}/callback/', 'Auth\LoginController@Callback')->name('login.callback');
 
-Route::get('/', 'FrontendController@home')->name('home');
+Route::get('/', 'FrontendController@home')->name('home')->middleware('LogVisitor');;
 
 // Frontend Routes
 Route::get('/home', 'FrontendController@index');
@@ -170,6 +173,14 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('/thank-you', 'OrderController@success')->name('payment.success');
     Route::get('/product/order/income/all', 'AdminController@getIncomeDataAll')->name('product.order.income.all');
     Route::get('/admin/user-registrations', 'AdminController@getUserRegistrationData')->name('admin.user.registrations');
+    Route::get('/admin/conversion-rate', 'AdminController@conversionRate')->name('admin.conversion.rate');
+    Route::get('/admin/product-sales-category', 'AdminController@productSalesByCategory')->name('admin.product.sales.category');
+    Route::get('/admin/visitor-stats', 'AdminController@visitorStats')->name('admin.visitor.stats');
+    Route::get('/admin/order-stats', 'AdminController@getOrderStats')->name('admin.orderStats');
+
+    //Reports
+
+    Route::get('/export-revenue', 'ReportController@exportRevenueReport')->name('export.revenue');
 });
 
 

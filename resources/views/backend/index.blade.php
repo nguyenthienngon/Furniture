@@ -6,9 +6,15 @@
     <div class="container-fluid">
         @include('backend.layouts.notification')
         <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+            <a href="{{ route('export.revenue') }}" class="btn btn-success btn-sm btn-primary shadow-sm">
+                <i class="fas fa-download fa-sm text-white-50"></i> Xuất báo cáo
+            </a>
         </div>
+
+
+
 
         <!-- Content Row -->
         <div class="row">
@@ -203,27 +209,80 @@
                     </div>
                     <div class="card-body">
                         <div class="chart-area">
-                            <canvas id="myBarChart"></canvas>
+                            <canvas id="myLineChart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Biểu đồ số người đăng ký -->
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Biểu đồ số người đăng ký -->
+                    <div class="col-md-6 p-1">
+                        <div class="card">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Số người đăng ký trong 7 ngày gần nhất</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-area d-flex justify-content-center">
+                                    <canvas id="userRegistrationChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Biểu đồ tỷ lệ đơn hàng -->
+                    <div class="col-md-6 p-1">
+                        <div class="card">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Tỷ lệ đơn hàng</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-area d-flex justify-content-center">
+                                    <canvas id="orderStatsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
             <div class="col-12">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Số người đăng ký trong 7 ngày gần nhất</h6>
+                        <h6 class="m-0 font-weight-bold text-primary">Số lượng sản phẩm đã bán theo danh mục</h6>
                     </div>
                     <div class="card-body">
                         <div class="chart-area">
-                            <canvas id="userRegistrationChart"></canvas>
+                            <canvas id="productSalesChart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
 
 
+            <div class="col-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Lượng truy cập</h6>
+                        <select id="dataFilter" class="form-select w-auto">
+                            <option value="daily">Ngày</option>
+                            <option value="weekly">Tuần</option>
+
+                        </select>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area">
+                            <canvas id="visitorChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
 
@@ -235,102 +294,59 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            function loadBarChart() {
-                axios.get("{{ route('product.order.income.all') }}") // Gọi API Laravel
-                    .then(response => {
-                        console.log(response.data); // Kiểm tra dữ liệu có đúng không trên console
+            fetch("{{ route('admin.orderStats') }}")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Dữ liệu đơn hàng:", data);
 
-                        const ctx = document.getElementById("myBarChart");
-                        if (!ctx) return;
+                    let ctx = document.getElementById('orderStatsChart');
+                    if (!ctx) {
+                        console.error("Không tìm thấy phần tử orderStatsChart");
+                        return;
+                    }
+                    ctx = ctx.getContext('2d');
 
-                        const months = Object.keys(response.data);
-                        const revenues = Object.values(response.data);
-
-                        // Kiểm tra dữ liệu có rỗng không
-                        if (months.length === 0) {
-                            console.log("Không có dữ liệu doanh thu");
-                            return;
-                        }
-
-                        // Hủy biểu đồ cũ nếu có
-                        if (window.barChart) {
-                            window.barChart.destroy();
-                        }
-
-                        // Vẽ biểu đồ Bar Chart
-                        window.barChart = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: months,
-                                datasets: [{
-                                    label: "Doanh thu",
-                                    backgroundColor: "rgba(78, 115, 223, 0.5)",
-                                    borderColor: "rgba(78, 115, 223, 1)",
-                                    data: revenues,
-                                }],
-                            },
-                            options: {
-                                responsive: true,
-                                scales: {
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: "Tháng"
-                                        }
-                                    },
-                                    y: {
-                                        title: {
-                                            display: true,
-                                            text: "Doanh thu"
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Thành công', 'Đã hủy', 'Tổng đơn'],
+                            datasets: [{
+                                data: [data.success, data.canceled, data.total],
+                                backgroundColor: ['#28a745', '#dc3545', '#ffc107'],
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(tooltipItem) {
+                                            return tooltipItem.raw + " đơn";
                                         }
                                     }
                                 }
                             }
-                        });
-                    })
-                    .catch(error => console.log("Lỗi tải dữ liệu:", error));
-            }
-
-            // Gọi biểu đồ cột doanh thu
-            loadBarChart();
-
-            // Tải Google Charts và gọi biểu đồ tròn
-            google.charts.load('current', {
-                'packages': ['corechart']
-            });
-            google.charts.setOnLoadCallback(drawPieChart);
-
-            function drawPieChart() {
-                var analytics = @json($users);
-
-                // Kiểm tra nếu dữ liệu không hợp lệ
-                if (!Array.isArray(analytics) || analytics.length === 0) {
-                    console.log("Dữ liệu biểu đồ tròn không hợp lệ");
-                    return;
-                }
-
-                var data = google.visualization.arrayToDataTable(analytics);
-
-                var options = {
-                    title: 'Tài khoản đăng ký trong 7 ngày gần đây',
-                    is3D: true,
-                    backgroundColor: 'transparent'
-                };
-
-                var chart = new google.visualization.PieChart(document.getElementById('pie_chart'));
-                chart.draw(data, options);
-            }
+                        }
+                    });
+                })
+                .catch(error => console.error("Lỗi khi tải dữ liệu biểu đồ đơn hàng:", error));
         });
+    </script>
+    <script>
         document.addEventListener("DOMContentLoaded", function() {
-            function loadBarChart() {
-                axios.get("{{ route('product.order.income.all') }}") // Gọi API Laravel
+            function loadLineChart() {
+                axios.get("{{ route('product.order.income.all') }}")
                     .then(response => {
                         console.log(response.data);
 
-                        const ctx = document.getElementById("myBarChart");
+                        const ctx = document.getElementById("myLineChart");
                         if (!ctx) return;
 
                         const months = Object.keys(response.data);
@@ -341,19 +357,21 @@
                             return;
                         }
 
-                        if (window.barChart) {
-                            window.barChart.destroy();
+                        if (window.lineChart) {
+                            window.lineChart.destroy();
                         }
 
-                        window.barChart = new Chart(ctx, {
-                            type: 'bar',
+                        window.lineChart = new Chart(ctx, {
+                            type: 'line',
                             data: {
                                 labels: months,
                                 datasets: [{
                                     label: "Doanh thu",
-                                    backgroundColor: "rgba(78, 115, 223, 0.5)",
+                                    backgroundColor: "rgba(78, 115, 223, 0.2)",
                                     borderColor: "rgba(78, 115, 223, 1)",
                                     data: revenues,
+                                    fill: true,
+                                    tension: 0.3
                                 }],
                             },
                             options: {
@@ -378,46 +396,121 @@
                     .catch(error => console.log("Lỗi tải dữ liệu:", error));
             }
 
-            function loadUserRegistrationChart() {
+            loadLineChart();
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            function drawPieChart() {
                 axios.get("{{ route('admin.user.registrations') }}")
                     .then(response => {
                         console.log(response.data);
 
-                        const ctx = document.getElementById("userRegistrationChart");
-                        if (!ctx) return;
-
-                        const days = response.data.map(item => item[0]); // Lấy tên ngày
-                        const counts = response.data.map(item => item[1]); // Lấy số lượng đăng ký
-
-                        if (days.length === 0) {
-                            console.log("Không có dữ liệu người đăng ký");
+                        if (!Array.isArray(response.data) || response.data.length === 0) {
+                            console.log("Không có dữ liệu đăng ký");
                             return;
                         }
 
-                        if (window.userChart) {
-                            window.userChart.destroy();
+                        const labels = response.data.map(item => item[0]); // Lấy tên ngày
+                        const values = response.data.map(item => item[1]); // Lấy số lượng đăng ký
+
+                        const ctx = document.getElementById("userRegistrationChart");
+                        if (!ctx) return;
+
+                        // Hủy biểu đồ cũ nếu có
+                        if (window.pieChart) {
+                            window.pieChart.destroy();
                         }
 
-                        window.userChart = new Chart(ctx, {
-                            type: 'bar',
+                        // Vẽ biểu đồ tròn với Chart.js
+                        window.pieChart = new Chart(ctx, {
+                            type: 'pie',
                             data: {
-                                labels: days,
+                                labels: labels,
                                 datasets: [{
                                     label: "Số người đăng ký",
-                                    backgroundColor: "rgba(54, 162, 235, 0.5)",
-                                    borderColor: "rgba(54, 162, 235, 1)",
-                                    data: counts,
-                                }],
+                                    backgroundColor: [
+                                        "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+                                        "#9966FF", "#FF9F40", "#66BB6A"
+                                    ],
+                                    data: values
+                                }]
                             },
                             options: {
                                 responsive: true,
-                                maintainAspectRatio: false, // Cho phép tự điều chỉnh kích thước
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
 
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => console.log("Lỗi tải dữ liệu:", error));
+            }
+
+            drawPieChart();
+        });
+    </script>
+@endpush
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gauge-chart.js"></script>
+
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            function loadProductSalesChart() {
+                axios.get("{{ route('admin.product.sales.category') }}")
+                    .then(response => {
+                        const ctx = document.getElementById("productSalesChart");
+                        if (!ctx) return;
+
+                        // Lấy danh mục sản phẩm
+                        const categories = response.data.map(item => item.category);
+                        // Lấy số lượng sản phẩm đã bán trong tháng hiện tại và tháng trước
+                        const currentMonthSales = response.data.map(item => item.current_month_sales);
+                        const previousMonthSales = response.data.map(item => item.previous_month_sales);
+
+                        if (window.salesChart) {
+                            window.salesChart.destroy();
+                        }
+
+                        window.salesChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: categories,
+                                datasets: [{
+                                        label: "Tháng này",
+                                        backgroundColor: "rgba(75, 192, 192, 0.5)",
+                                        borderColor: "rgba(75, 192, 192, 1)",
+                                        data: currentMonthSales
+                                    },
+                                    {
+                                        label: "Tháng trước",
+                                        backgroundColor: "rgba(255, 99, 132, 0.5)",
+                                        borderColor: "rgba(255, 99, 132, 1)",
+                                        data: previousMonthSales
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
                                 scales: {
                                     y: {
                                         title: {
                                             display: true,
-                                            text: "Số lượng đăng ký"
+                                            text: "Số lượng sản phẩm"
+                                        }
+                                    },
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: "Danh mục sản phẩm"
                                         }
                                     }
                                 }
@@ -427,36 +520,90 @@
                     .catch(error => console.log("Lỗi tải dữ liệu:", error));
             }
 
-            // Gọi cả hai biểu đồ
-            loadBarChart();
-            loadUserRegistrationChart();
+            loadProductSalesChart();
         });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/gauge-chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById("visitorChart").getContext("2d");
+            const dataFilter = document.getElementById("dataFilter");
+            let visitorChart;
 
-        google.charts.load('current', {
-            'packages': ['corechart']
+            function fetchData(filterType) {
+                axios.get("{{ route('admin.visitor.stats') }}")
+                    .then(response => {
+                        const data = response.data;
+                        let labels = [];
+                        let selectedData = [];
+                        let titleText = "";
+
+                        if (filterType === "daily") {
+                            labels = data.daily_labels || []; // Hiển thị 7 ngày gần nhất
+                            selectedData = data.daily || [];
+                            titleText = "Thống kê lượt truy cập theo ngày (7 ngày gần nhất)";
+                        } else if (filterType === "weekly") {
+                            labels = data.weekly_labels || []; // Hiển thị khoảng thời gian tuần
+                            selectedData = data.weekly || [];
+                            titleText = "Thống kê lượt truy cập theo tuần";
+                        }
+
+                        // Xóa biểu đồ cũ nếu có
+                        if (visitorChart) {
+                            visitorChart.destroy();
+                        }
+
+                        // Vẽ biểu đồ mới
+                        visitorChart = new Chart(ctx, {
+                            type: "bar",
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: "Lượt truy cập",
+                                    data: selectedData,
+                                    backgroundColor: "rgba(54, 162, 235, 0.6)",
+                                    borderColor: "rgba(54, 162, 235, 1)",
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: titleText
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: filterType === "daily" ? "Ngày" :
+                                                "Khoảng thời gian tuần"
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                            text: "Số lượt truy cập"
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => console.log("Lỗi tải dữ liệu:", error));
+            }
+
+            // Gọi API khi thay đổi dropdown
+            dataFilter.addEventListener("change", function() {
+                fetchData(this.value);
+            });
+
+            // Tải dữ liệu ban đầu
+            fetchData("daily");
         });
-
-        google.charts.setOnLoadCallback(drawBarChart);
-
-        function drawBarChart() {
-            axios.get("{{ route('admin.user.registrations') }}")
-                .then(response => {
-                    var data = google.visualization.arrayToDataTable(response.data);
-
-                    var options = {
-                        vAxis: {
-                            title: 'Số lượng đăng ký'
-                        },
-                        legend: {
-                            position: 'none'
-                        },
-                        colors: ['#4285F4'] // Màu cột
-                    };
-
-                    var chart = new google.visualization.ColumnChart(document.getElementById('bar_chart'));
-                    chart.draw(data, options);
-                })
-                .catch(error => console.log(error));
-        }
     </script>
 @endpush

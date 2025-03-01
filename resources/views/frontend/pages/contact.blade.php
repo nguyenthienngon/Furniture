@@ -20,7 +20,6 @@
     </div>
     <!-- End Breadcrumbs -->
 
-    <!-- Start Contact -->
     <section id="contact-us" class="contact-us section">
         <div class="container">
             <div class="contact-head">
@@ -43,35 +42,35 @@
                                 <div class="col-lg-6 col-12">
                                     <div class="form-group">
                                         <label>Họ Tên<span>*</span></label>
-                                        <input name="name" id="name" type="text"
+                                        <input name="name" id="name" type="text" value="{{ old('name') }}"
                                             placeholder="Nhập họ tên của bạn">
                                     </div>
                                 </div>
                                 <div class="col-lg-6 col-12">
                                     <div class="form-group">
                                         <label>Bạn cần thông tin về sản phẩm/dịch vụ gì ?<span>*</span></label>
-                                        <input name="subject" type="text" id="subject"
+                                        <input name="subject" type="text" id="subject" value="{{ old('subject') }}"
                                             placeholder="Nhập thông tin">
                                     </div>
                                 </div>
                                 <div class="col-lg-6 col-12">
                                     <div class="form-group">
                                         <label>Email của bạn<span>*</span></label>
-                                        <input name="email" type="email" id="email"
+                                        <input name="email" type="email" id="email" value="{{ old('email') }}"
                                             placeholder="Nhập Email của bạn">
                                     </div>
                                 </div>
                                 <div class="col-lg-6 col-12">
                                     <div class="form-group">
                                         <label>Số điện thoại<span>*</span></label>
-                                        <input id="phone" name="phone" type="number"
+                                        <input id="phone" name="phone" type="number" value="{{ old('phone') }}"
                                             placeholder="Nhập số điện thoại của bạn">
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group message">
                                         <label>Nội dung<span>*</span></label>
-                                        <textarea name="message" id="message" cols="30" rows="9" placeholder="Nhập nội dung"></textarea>
+                                        <textarea name="message" id="message" cols="30" rows="9" placeholder="Nhập nội dung">{{ old('message') }}</textarea>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -81,13 +80,19 @@
                                 </div>
                             </div>
                         </form>
+                        <!-- Display success message -->
+                        @if (session('success'))
+                            <div class="alert alert-success mt-3">
+                                {{ session('success') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="col-lg-4 col-12">
                     <div class="single-head">
                         <div class="single-info">
                             <i class="fa fa-phone"></i>
-                            <h4 class="title">Gọi cho chùng tôi ngay:</h4>
+                            <h4 class="title">Gọi cho chúng tôi ngay:</h4>
                             <ul>
                                 <li>
                                     @foreach ($settings as $data)
@@ -137,70 +142,61 @@
 </div>
 <!--/ End Map Section -->
 
-
-
 <!-- Start Shop Newsletter  -->
 @include('frontend.layouts.newsletter')
 <!-- End Shop Newsletter -->
-<!--================Contact Success  =================-->
-<div class="modal fade" id="success" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="text-success">Xin cảm ơn!</h2>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="text-success">Tin nhắn của bạn đã được gửi thành công...</p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Modals error -->
-<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="text-warning">Sorry!</h2>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="text-warning">Có một vài lỗi trong quá trình thực hiện.</p>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('styles')
-<style>
-    .modal-dialog .modal-content .modal-header {
-        position: initial;
-        padding: 10px 20px;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .modal-dialog .modal-content .modal-body {
-        height: 100px;
-        padding: 10px 20px;
-    }
-
-    .modal-dialog .modal-content {
-        width: 50%;
-        border-radius: 0;
-        margin: auto;
-    }
-</style>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 @endpush
+
 @push('scripts')
 <script src="{{ asset('frontend/js/jquery.form.js') }}"></script>
 <script src="{{ asset('frontend/js/jquery.validate.min.js') }}"></script>
 <script src="{{ asset('frontend/js/contact.js') }}"></script>
+
+<script>
+    @if (session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: '{{ session('success') }}',
+        }).then(function() {
+            // Optionally reset the form
+            $('#contactForm')[0].reset();
+        });
+    @endif
+
+    // Handle the form submission
+    $('#contactForm').submit(function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            type: 'POST',
+            url: "{{ route('contact.store') }}",
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: response.success,
+                    }).then(function() {
+                        // Reset form fields
+                        $('#contactForm')[0].reset();
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Có lỗi xảy ra, vui lòng thử lại!',
+                });
+            }
+        });
+    });
+</script>
 @endpush

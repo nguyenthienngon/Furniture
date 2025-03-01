@@ -115,18 +115,21 @@
                 </div>
                 <div class="form-group">
                     <label for="inputPhoto" class="col-form-label">Ảnh <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-btn">
-                            <a id="lfm" data-input="thumbnail" data-preview="holder"
-                                class="btn btn-primary text-white">
-                                <i class="fas fa-image"></i> Lựa chọn
-                            </a>
-                        </span>
-                        <input id="thumbnail" class="form-control" type="text" name="photo"
-                            value="{{ $product->photo }}">
+                    <div id="photo-container">
+                        @if ($product->photo)
+                            @foreach (explode(',', $product->photo) as $photo)
+                                <div class="input-group mb-2">
+                                    <input type="text" name="photos[]" class="form-control"
+                                        value="{{ $photo }}" readonly>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-danger remove-photo" type="button">Xóa</button>
+                                    </span>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
-                    <div id="holder" style="margin-top:15px;max-height:100px;"></div>
-                    @error('photo')
+                    <button type="button" class="btn btn-primary" id="select-photo">Thêm ảnh</button>
+                    @error('photos')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
@@ -224,5 +227,38 @@
         if (child_cat_id != null) {
             $('#cat_id').change();
         }
+
+        $(document).ready(function() {
+
+            // Xóa input ảnh
+            $(document).on('click', '.remove-photo', function() {
+                $(this).closest('.input-group').remove();
+            });
+
+            // Mở File Manager
+            $('#select-photo').click(function() {
+                let route_prefix = "/filemanager"; // Laravel File Manager URL
+                window.open(route_prefix + '?type=image', 'FileManager', 'width=900,height=600');
+            });
+
+            // Hàm xử lý khi chọn ảnh từ File Manager
+            window.SetUrl = function(urls) {
+                console.log(urls); // Kiểm tra dữ liệu trả về
+
+                urls.forEach(urlObj => {
+                    let imageUrl = typeof urlObj === 'object' ? urlObj.url :
+                    urlObj; // Lấy URL từ object nếu có
+
+                    $('#photo-container').append(`
+        <div class="input-group mb-2">
+            <input type="text" name="photos[]" class="form-control" value="${imageUrl}" readonly>
+            <span class="input-group-btn">
+                <button class="btn btn-danger remove-photo" type="button">Xóa</button>
+            </span>
+        </div>
+    `);
+                });
+            };
+        });
     </script>
 @endpush
