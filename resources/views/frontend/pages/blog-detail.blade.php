@@ -40,7 +40,6 @@
                                                 href="javascript:void(0);"><i class="fa fa-comments"></i>Comment
                                                 ({{ $post->allComments->count() }})</a></span>
                                     </div>
-                                    <div class="sharethis-inline-reaction-buttons"></div>
                                     <div class="content">
                                         @if ($post->quote)
                                             <blockquote> <i class="fa fa-quote-left"></i> {!! $post->quote !!}
@@ -114,8 +113,8 @@
                                 </div>
                             @else
                                 <p class="text-center p-5">
-                                    You need to <a href="{{ route('login.form') }}" style="color:rgb(54, 54, 204)">Đăng
-                                        Nhập</a> OR <a style="color:blue" href="{{ route('register.form') }}">Đăng Ký</a> để
+                                    Bạn cần <a href="{{ route('login.form') }}" style="color:rgb(54, 54, 204)">Đăng
+                                        Nhập</a> hoặc <a style="color:blue" href="{{ route('register.form') }}">Đăng Ký</a> để
                                     bình luận.
 
                                 </p>

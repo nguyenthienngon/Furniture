@@ -390,36 +390,30 @@ class FrontendController extends Controller
     }
     public function loginSubmit(Request $request)
     {
-        // Xác thực dữ liệu đầu vào
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        $data = $request->all();
+        $user = User::where('email', $request->email)->first();
 
-        // Kiểm tra đăng nhập
-        if (Auth::attempt(['email' => $data['email'], 'password' => $data['password'], 'status' => 'active'])) {
-            // Đăng nhập thành công
-            session(['user' => Auth::user()]); // Lưu thông tin người dùng vào session
+        if (!$user) {
+            return back()->withErrors(['email' => 'Sai tên đăng nhập hoặc mật khẩu.']);
+        }
+
+        // if (!$user->hasVerifiedEmail()) {
+        //     return back()->withErrors(['email' => 'Vui lòng xác minh email trước khi đăng nhập.']);
+        // }
+
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'status' => 'active'])) {
+            session(['user' => Auth::user()]);
             request()->session()->flash('success', 'Đăng nhập thành công');
-            return redirect()->route('home'); // Chuyển hướng đến trang chủ
+            return redirect()->route('home');
         }
 
-        // Đăng nhập thất bại
-        $user = User::where('email', $data['email'])->first();
-
-        if ($user && $user->status !== 'active') {
-            // Người dùng chưa được kích hoạt
-            return back()->withErrors(['email' => 'Tài khoản của bạn chưa được kích hoạt.']);
-        }
-
-        // Sai tên đăng nhập hoặc mật khẩu
-        return back()->withErrors([
-            'email' => 'Sai tên đăng nhập hoặc mật khẩu. Vui lòng thử lại.',
-            'password' => '' // Để làm lỗi cho cả 2 input (email và password)
-        ]);
+        return back()->withErrors(['email' => 'Sai tên đăng nhập hoặc mật khẩu.']);
     }
+
 
 
     public function logout()

@@ -1,0 +1,30 @@
+{
+    "provinces": [
+      {
+        "Code": "01",
+        "FullName": "Thành phố Hà Nội",
+        "Districts": [
+          {
+            "Code": "001",
+            "FullName": "Quận Ba Đình",
+            "ProvinceCode": "01",
+            "Wards": [
+              { "Code": "00001", "FullName": "Phường Phúc Xá" },
+              { "Code": "00004", "FullName": "Phường Trúc Bạch" },
+              { "Code": "00006", "FullName": "Phường Vĩnh Phúc" }
+            ]
+          },
+          {
+            "Code": "002",
+            "FullName": "Quận Hoàn Kiếm",
+            "ProvinceCode": "01",
+            "Wards": [
+              { "Code": "00037", "FullName": "Phường Phúc Tân" },
+              { "Code": "00040", "FullName": "Phường Đồng Xuân" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  

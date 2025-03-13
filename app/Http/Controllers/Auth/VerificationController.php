@@ -5,42 +5,34 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\VerifiesEmails;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class VerificationController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Email Verification Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller is responsible for handling email verification for any
-    | user that recently registered with the application. Emails may also
-    | be re-sent if the user didn't receive the original email message.
-    |
-    */
-
     use VerifiesEmails;
 
-    /**
-     * Where to redirect users after verification.
-     *
-     * @var string
-     */
     protected $redirectTo = RouteServiceProvider::HOME;
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('auth');
         $this->middleware('signed')->only('verify');
         $this->middleware('throttle:6,1')->only('verify', 'resend');
     }
-    protected function redirectTo()
+
+    /**
+     * Đăng nhập lại người dùng sau khi xác minh email
+     */
+    protected function verified(Request $request)
     {
-        return route('home'); // Chuyển hướng về trang chủ sau khi xác thực thành công
+        $user = $request->user();
+
+        if (is_null($user->email_verified_at)) {
+            $user->markEmailAsVerified(); // Cập nhật email_verified_at
+        }
+
+        Auth::login($user); // Đăng nhập lại
+        return redirect()->route('home')->with('success', 'Email của bạn đã được xác minh!');
     }
 }
